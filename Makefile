@@ -70,4 +70,4 @@ dep:
 init/main.o : init/main.c
 
 run: Image
-	qemu -hdb ../hd_oldlinux.img -fda $< -boot order=ac
+	qemu -fda $<
