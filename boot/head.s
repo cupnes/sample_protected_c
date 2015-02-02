@@ -79,17 +79,6 @@ setup_gdt:
 	lgdt gdt_descr
 	ret
 
-.org 0x1000
-pg0:
-
-.org 0x2000
-pg1:
-
-.org 0x3000
-pg2:		# This is not used yet, but if you
-		# want to expand past 8 Mb, you'll have
-		# to use it.
-
 .org 0x4000
 after_page_tables:
 	pushl $0		# These are the parameters to main :-)
@@ -97,7 +86,7 @@ after_page_tables:
 	pushl $0
 	pushl $L6		# return address for main, if it decides to.
 	pushl $main
-	jmp setup_paging
+	ret
 L6:
 	jmp L6			# main should never return here, but
 				# just in case, we know what happens.
@@ -108,52 +97,6 @@ ignore_int:
 	incb 0xb8000+160		# put something on the screen
 	movb $2,0xb8000+161		# so that we know something
 	iret				# happened
-
-
-/*
- * Setup_paging
- *
- * This routine sets up paging by setting the page bit
- * in cr0. The page tables are set up, identity-mapping
- * the first 8MB. The pager assumes that no illegal
- * addresses are produced (ie >4Mb on a 4Mb machine).
- *
- * NOTE! Although all physical memory should be identity
- * mapped by this routine, only the kernel page functions
- * use the >1Mb addresses directly. All "normal" functions
- * use just the lower 1Mb, or the local data space, which
- * will be mapped to some other place - mm keeps track of
- * that.
- *
- * For those with more memory than 8 Mb - tough luck. I've
- * not got it, why should you :-) The source is here. Change
- * it. (Seriously - it shouldn't be too difficult. Mostly
- * change some constants etc. I left it at 8Mb, as my machine
- * even cannot be extended past that (ok, but it was cheap :-)
- * I've tried to show which constants to change by having
- * some kind of marker at them (search for "8Mb"), but I
- * won't guarantee that's all :-( )
- */
-.align 2
-setup_paging:
-	movl $1024*3,%ecx
-	xorl %eax,%eax
-	xorl %edi,%edi			/* pg_dir is at 0x000 */
-	cld;rep;stosl
-	movl $pg0+7,pg_dir		/* set present bit/user r/w */
-	movl $pg1+7,pg_dir+4		/*  --------- " " --------- */
-	movl $pg1+4092,%edi
-	movl $0x7ff007,%eax		/*  8Mb - 4096 + 7 (r/w user,p) */
-	std
-1:	stosl			/* fill pages backwards - more efficient :-) */
-	subl $0x1000,%eax
-	jge 1b
-	xorl %eax,%eax		/* pg_dir is at 0x0000 */
-	movl %eax,%cr3		/* cr3 - page directory start */
-	movl %cr0,%eax
-	orl $0x80000000,%eax
-	movl %eax,%cr0		/* set paging (PG) bit */
-	ret			/* this also flushes prefetch-queue */
 
 .align 2
 .word 0
