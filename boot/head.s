@@ -7,8 +7,7 @@
  */
 .code32
 .text
-.globl idt,gdt,pg_dir,startup_32
-pg_dir:
+.globl idt,gdt,startup_32
 startup_32:
 	movl $0x10,%eax
 	mov %ax,%ds

@@ -15,9 +15,6 @@ CC	=gcc
 CFLAGS	=-Wall -O -fstrength-reduce -fomit-frame-pointer -fno-stack-protector
 CPP	=gcc -E -nostdinc -Iinclude
 
-ARCHIVES=kernel/kernel.o
-LIBS	=lib/lib.a
-
 .c.s:
 	$(CC) $(CFLAGS) \
 	-nostdinc -Iinclude -S -o $*.s $<
@@ -32,12 +29,10 @@ all: Image
 Image: boot/boot tools/system tools/build
 	objcopy  -O binary -R .note -R .comment tools/system tools/system.bin
 	tools/build boot/boot tools/system.bin > Image
-#	sync
 
 tools/build: tools/build.c
 	$(CC) $(CFLAGS) \
 	-o tools/build tools/build.c
-	#chmem +65000 tools/build
 
 boot/head.o: boot/head.s
 
@@ -47,7 +42,7 @@ tools/system:	boot/head.o init/main.o
 
 boot/boot:	boot/boot.s tools/system
 	(echo -n "SYSSIZE = (";stat -c%s tools/system \
-		| tr '\012' ' '; echo "+ 15 ) / 16") > tmp.s	
+		| tr '\012' ' '; echo "+ 15 ) / 16") > tmp.s
 	cat boot/boot.s >> tmp.s
 	$(AS86) -o boot/boot.o tmp.s
 	rm -f tmp.s
@@ -59,7 +54,6 @@ clean:
 
 backup: clean
 	(cd .. ; tar cf - linux | compress16 - > backup.Z)
-#	sync
 
 dep:
 	sed '/\#\#\# Dependencies/q' < Makefile > tmp_make

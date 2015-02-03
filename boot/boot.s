@@ -72,7 +72,7 @@ go:	mov	ax,cs
 	mov	ah,#0x03	; read cursor pos
 	xor	bh,bh
 	int	0x10
-	
+
 	mov	cx,#24
 	mov	bx,#0x0007	; page 0, attribute 7 (normal)
 	mov	bp,#msg1
@@ -94,7 +94,7 @@ go:	mov	ax,cs
 	xor	bh,bh
 	int	0x10		; save it in known place, con_init fetches
 	mov	[510],dx	; it from 0x90510.
-		
+
 ; now we want to move to protected mode ...
 
 	cli			; no interrupts allowed !
@@ -315,7 +315,7 @@ idt_48:
 gdt_48:
 	.word	0x800		; gdt limit=2048, 256 GDT entries
 	.word	gdt,0x9		; gdt base = 0X9xxxx
-	
+
 msg1:
 	.byte 13,10
 	.ascii "Loading system ..."
